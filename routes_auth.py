@@ -41,29 +41,34 @@ def generate_otp(length: int = 6) -> str:
 
 
 def send_email_otp(to_email: str, otp: str, purpose: str):
-    msg = EmailMessage()
-    msg["Subject"] = f"Your OTP for Vendora ({purpose})"
-    msg["From"] = config.GMAIL_USER
-    msg["To"] = to_email
-    msg.set_content(
-        f"""
-Your OTP is: {otp}
+    # If Gmail creds not set, just log OTP (DEV MODE)
+    if not config.GMAIL_USER or not config.GMAIL_APP_PASSWORD:
+        print(f"[DEV OTP] {purpose.upper()} OTP for {to_email}: {otp}")
+        return
 
-Expires in {config.OTP_EXPIRY_MINUTES} minutes.
+    try:
+        msg = EmailMessage()
+        msg["Subject"] = f"Your OTP for Smart POS ({purpose})"
+        msg["From"] = config.GMAIL_USER
+        msg["To"] = to_email
+        msg.set_content(
+            f"Your OTP is: {otp}\n"
+            f"It will expire in {config.OTP_EXPIRY_MINUTES} minutes."
+        )
 
-If you didn't request this, ignore this email.
-"""
-    )
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+            smtp.login(config.GMAIL_USER, config.GMAIL_APP_PASSWORD)
+            smtp.send_message(msg)
 
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
-        smtp.login(config.GMAIL_USER, config.GMAIL_APP_PASSWORD)
-        smtp.send_message(msg)
+    except Exception as e:
+        print("⚠️ Email sending failed:", str(e))
 
 
 def create_jwt(payload: dict) -> str:
+    data = payload.copy()
     expiry = datetime.now(timezone.utc) + timedelta(days=config.JWT_EXPIRY_DAYS)
-    payload["exp"] = expiry
-    return jwt.encode(payload, config.JWT_SECRET, algorithm="HS256")
+    data["exp"] = expiry
+    return jwt.encode(data, config.JWT_SECRET, algorithm="HS256")
 
 
 def validate_otp(email: str, otp: str, purpose: str):
@@ -199,15 +204,18 @@ def login_send_otp(payload: LoginRequest):
 def login_verify(payload: VerifyLoginRequest):
     validate_otp(payload.email, payload.otp, "login")
 
-    user = (
+    res = (
         supabase.table("store_users")
         .select("*")
         .eq("email", payload.email)
         .limit(1)
         .execute()
-        .data[0]
+        
     )
+    if not res.data:
+        raise HTTPException(status_code=404, detail="User not found")
 
+    user = res.data[0]
     token = create_jwt({
         "user_id": user["user_id"],
         "store_id": user["store_id"],
