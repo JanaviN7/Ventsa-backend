@@ -23,6 +23,13 @@ GMAIL_APP_PASSWORD = "vooeicmnljzncwqz"
 # WHATSAPP_TOKEN = "PASTE_ACCESS_TOKEN_HERE"
 # WHATSAPP_PHONE_ID = "PASTE_PHONE_NUMBER_ID_HERE"
 # WHATSAPP_URL = f"https://graph.facebook.com/v22.0/{WHATSAPP_PHONE_ID}/messages"
+# =====================
+# RAZORPAY — swap these with real keys when account is approved
+# Get from: https://dashboard.razorpay.com/app/keys
+# =====================
+RAZORPAY_KEY_ID = "rzp_test_XXXXXXXXXXXXXXXX"       # ← paste your Key ID here
+RAZORPAY_KEY_SECRET = "XXXXXXXXXXXXXXXXXXXXXXXX"    # ← paste your Key Secret here
+RAZORPAY_WEBHOOK_SECRET = "XXXXXXXXXXXXXX"          # ← set in Razorpay dashboard > Webhooks
 
 # categories
 DEFAULT_STORE_CATEGORIES = [

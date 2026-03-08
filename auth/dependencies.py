@@ -27,7 +27,7 @@ def auth_required(
         return {
             "user_id": payload["user_id"],
             "store_id": payload["store_id"],
-            "role": payload.get("role", "staff"),
+            "role": payload.get("role") or "cashier",
             "email": payload.get("email")
         }
 
@@ -36,5 +36,3 @@ def auth_required(
 
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
-
-    

@@ -9,10 +9,11 @@ from routes_store import router as store_router
 from routes_auth import router as auth_router
 from routes_staff import router as staff_router
 from routes_whatsapp import router as whatsapp_router
-from routes_dues import router as dues_router
+#from routes_dues import router as dues_router
 from routes_ledger import router as ledger_router
 from routes_reminders import router as reminders_router
 from routes_invoice import router as invoice_router
+from routes_subscription import router as subscription_router
 app = FastAPI(title="Smart POS API")
 
 # 🔥 CORS — MUST be BEFORE routes
@@ -47,7 +48,8 @@ app.include_router(sales_router)
 app.include_router(reports_router)
 
 app.include_router(whatsapp_router)
-app.include_router(dues_router)
+#app.include_router(dues_router)
 app.include_router(ledger_router)
 app.include_router(reminders_router)
 app.include_router(invoice_router)
+app.include_router(subscription_router) 

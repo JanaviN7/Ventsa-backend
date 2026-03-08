@@ -1,4 +1,10 @@
 fastapi
 uvicorn
-python-dotenv
 supabase
+python-jose[cryptography]
+passlib[bcrypt]
+pydantic[email]
+python-multipart
+PyJWT
+httpx
+razorpay

@@ -1,9 +1,13 @@
+# routes_staff.py
 from fastapi import APIRouter, Depends, HTTPException, Path
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
-from pydantic import Field, BaseModel
+from pydantic import BaseModel
 from supabase_client import supabase
 from auth.dependencies import auth_required
+from routes_subscription import check_plan_limit  # ✅ plan enforcement
+import jwt
+import config
 
 router = APIRouter(prefix="/staff", tags=["Staff"])
 
@@ -13,26 +17,31 @@ pwd_context = CryptContext(
 )
 
 
+def create_jwt(payload: dict) -> str:
+    data = payload.copy()
+    expiry = datetime.now(timezone.utc) + timedelta(days=config.JWT_EXPIRY_DAYS)
+    data["exp"] = expiry
+    return jwt.encode(data, config.JWT_SECRET, algorithm="HS256")
+
+
 # =======================
 # SCHEMAS
 # =======================
 
 class StaffCreate(BaseModel):
     name: str
-    role: str        # cashier | manager
-    pin: str         # 4-digit PIN
+    role: str       # cashier | manager
+    pin: str        # 4-digit PIN
 
 
 class StaffLogin(BaseModel):
     name: str
-    pin: str = Field(..., alias="pin_code")
-
-    class Config:
-        populate_by_name = True
+    pin_code: str
+    store_code: str  # ✅ e.g. "SHOP-4821" — no UUID needed
 
 
 class StaffStatusUpdate(BaseModel):
-    status: str      # active | inactive
+    status: str     # active | inactive
 
 
 # =======================
@@ -50,6 +59,9 @@ def add_staff(payload: StaffCreate, user=Depends(auth_required)):
     pin = payload.pin.strip()
     if len(pin) != 4 or not pin.isdigit():
         raise HTTPException(status_code=400, detail="PIN must be exactly 4 digits")
+
+    # ✅ Check free plan staff limit (1 max on free, 5 on basic)
+    check_plan_limit(user["store_id"], "staff")
 
     staff = {
         "store_id": user["store_id"],
@@ -122,45 +134,66 @@ def update_staff_status(
     if not res.data:
         raise HTTPException(status_code=404, detail="Staff not found")
 
-    return {
-        "success": True,
-        "staff": res.data[0]
-    }
+    return {"success": True, "staff": res.data[0]}
 
 
 # =======================
-# STAFF LOGIN (PIN BASED)
+# STAFF LOGIN (PIN + STORE CODE)
 # =======================
 
 @router.post("/login")
-def staff_login(payload: StaffLogin, user=Depends(auth_required)):
+def staff_login(payload: StaffLogin):
+    # ✅ Look up store by store_code — staff never needs to know UUID
+    store_res = supabase.table("stores") \
+        .select("store_id") \
+        .eq("store_code", payload.store_code.upper().strip()) \
+        .limit(1) \
+        .execute()
+
+    if not store_res.data:
+        raise HTTPException(status_code=401, detail="Invalid store code")
+
+    store_id = store_res.data[0]["store_id"]
+
+    # Find active staff by name within that store
     res = (
         supabase
         .table("store_users")
         .select("*")
-        .eq("store_id", user["store_id"])
         .eq("name", payload.name)
+        .eq("store_id", store_id)
         .eq("status", "active")
-        .single()
+        .limit(1)
         .execute()
     )
 
-    staff = res.data
+    staff = res.data[0] if res.data else None
     if not staff:
-        raise HTTPException(401, "Invalid staff name or PIN")
+        raise HTTPException(401, "Invalid name, store code, or PIN")
 
-    if not pwd_context.verify(payload.pin, staff["pin_hash"]):
-        raise HTTPException(401, "Invalid staff name or PIN")
+    if not pwd_context.verify(payload.pin_code, staff["pin_hash"]):
+        raise HTTPException(401, "Invalid name, store code, or PIN")
 
+    # Update last activity
     supabase.table("store_users").update({
         "last_activity": datetime.utcnow().isoformat()
     }).eq("user_id", staff["user_id"]).execute()
 
+    # ✅ Generate JWT so staff can make authenticated API calls
+    token = create_jwt({
+        "user_id": staff["user_id"],
+        "store_id": staff["store_id"],
+        "role": staff["role"],
+        "email": staff.get("email", "")
+    })
+
     return {
         "success": True,
+        "token": token,
         "staff": {
             "user_id": staff["user_id"],
             "name": staff["name"],
-            "role": staff["role"]
+            "role": staff["role"],
+            "store_id": staff["store_id"]
         }
     }
