@@ -7,15 +7,6 @@
 
 ---
 
-## 🚀 Live Demo
-🔗 [vendora.lovable.app](https://vendora.lovable.app) 
-
-**Demo Account:**
-- Email: `demo@vendora.in`
-- Use OTP login — any OTP works on demo
-
----
-
 ## 📱 What is Vendora?
 
 Vendora is a **mobile-first POS and business management app** designed for Indian kirana stores, boutiques, and retail vendors. It replaces paper billing, manual stock tracking, and spreadsheet headaches with a clean, fast, modern app.
