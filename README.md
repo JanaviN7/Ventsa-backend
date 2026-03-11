@@ -2,14 +2,14 @@
 ### Simple Billing. Smart Business.
 
 > A full-stack mobile-first POS system built for Indian retail vendors — from street shops to growing stores.
-
-![Vendora Banner](public/pwa-512x512.png)
+<img width="192" height="192" alt="pwa-192x192" src="https://github.com/user-attachments/assets/33133b9c-6d0c-4dce-9929-57b1140aaff4" />
 
 ---
 
 ## 📱 What is Vendora?
 
 Vendora is a **mobile-first POS and business management app** designed for Indian kirana stores, boutiques, and retail vendors. It replaces paper billing, manual stock tracking, and spreadsheet headaches with a clean, fast, modern app.
+
 
 ---
 
@@ -156,7 +156,16 @@ RAZORPAY_WEBHOOK_SECRET=...
 
 ## 📸 Screenshots
 
->
+> <img width="661" height="455" alt="image" src="https://github.com/user-attachments/assets/db174f6c-e809-4a5e-a9a6-b1b60d80db4c" />
+> <img width="661" height="499" alt="image" src="https://github.com/user-attachments/assets/d0bbf2b5-2a25-4378-bb70-7f1cdc754008" />
+> <img width="224" height="526" alt="image" src="https://github.com/user-attachments/assets/687bd80f-37f5-433b-83b5-115450ba4191" />
+> <img width="226" height="529" alt="image" src="https://github.com/user-attachments/assets/92de32f2-e108-464f-9832-2374e5002b16" />
+> <img width="225" height="528" alt="image" src="https://github.com/user-attachments/assets/9d58692a-7c9d-4ec0-b65d-465ca7355abe" />
+> <img width="220" height="522" alt="image" src="https://github.com/user-attachments/assets/b9474efb-4d28-4b9a-8d85-201848c0401d" />
+> <img width="226" height="522" alt="image" src="https://github.com/user-attachments/assets/23028897-1538-4d5d-8632-62d92982d46d" />
+
+
+
 
 ---
 
