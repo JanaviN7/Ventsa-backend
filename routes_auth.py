@@ -147,7 +147,9 @@ If you did not request this, please ignore this email.
         msg.attach(MIMEText(plain_body, "plain"))
         msg.attach(MIMEText(html_body, "html"))
 
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 587) as smtp:
+            smtp.ehlo()
+            smtp.starttls()
             smtp.login(config.GMAIL_USER, config.GMAIL_APP_PASSWORD)
             smtp.send_message(msg)
 
