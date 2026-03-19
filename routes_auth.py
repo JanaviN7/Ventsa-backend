@@ -4,10 +4,8 @@ from pydantic import BaseModel, EmailStr
 from datetime import datetime, timedelta, timezone
 import random
 import string
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 import jwt
+import resend
 
 import config
 from supabase_client import supabase
@@ -56,14 +54,13 @@ def generate_store_code() -> str:
 
 
 def send_email_otp(to_email: str, otp: str, purpose: str):
-    if not config.GMAIL_USER or not config.GMAIL_APP_PASSWORD:
+    if not config.RESEND_API_KEY:
         print(f"[DEV OTP] {purpose.upper()} OTP for {to_email}: {otp}")
         return
 
     try:
-        subject = "Your Vendrya Verification Code"
+        resend.api_key = config.RESEND_API_KEY
 
-        # ✅ Professional HTML email
         html_body = f"""
 <!DOCTYPE html>
 <html>
@@ -76,16 +73,12 @@ def send_email_otp(to_email: str, otp: str, purpose: str):
     <tr>
       <td align="center">
         <table width="500" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-
-          <!-- Header -->
           <tr>
             <td style="background:linear-gradient(135deg,#6366f1,#14b8a6);padding:32px;text-align:center;">
               <h1 style="margin:0;color:#ffffff;font-size:28px;font-weight:700;letter-spacing:-0.5px;">Vendrya</h1>
               <p style="margin:6px 0 0;color:rgba(255,255,255,0.85);font-size:13px;">Simple Billing. Smart Business.</p>
             </td>
           </tr>
-
-          <!-- Body -->
           <tr>
             <td style="padding:40px 40px 24px;">
               <p style="margin:0 0 8px;color:#374151;font-size:16px;font-weight:600;">
@@ -94,13 +87,10 @@ def send_email_otp(to_email: str, otp: str, purpose: str):
               <p style="margin:0 0 28px;color:#6b7280;font-size:14px;line-height:1.6;">
                 {"Thanks for signing up! Use the verification code below to complete your registration." if purpose == "signup" else "Use the code below to securely log in to your Vendrya account."}
               </p>
-
-              <!-- OTP Box -->
               <div style="background:#f0f0ff;border:2px dashed #6366f1;border-radius:10px;padding:24px;text-align:center;margin-bottom:28px;">
                 <p style="margin:0 0 6px;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:1px;">Your verification code</p>
                 <p style="margin:0;color:#4338ca;font-size:40px;font-weight:800;letter-spacing:12px;">{otp}</p>
               </div>
-
               <p style="margin:0 0 6px;color:#9ca3af;font-size:12px;text-align:center;">
                 This code expires in <strong>{config.OTP_EXPIRY_MINUTES} minutes</strong>
               </p>
@@ -109,8 +99,6 @@ def send_email_otp(to_email: str, otp: str, purpose: str):
               </p>
             </td>
           </tr>
-
-          <!-- Footer -->
           <tr>
             <td style="background:#f9fafb;padding:20px 40px;border-top:1px solid #e5e7eb;">
               <p style="margin:0;color:#9ca3af;font-size:12px;text-align:center;">
@@ -118,7 +106,6 @@ def send_email_otp(to_email: str, otp: str, purpose: str):
               </p>
             </td>
           </tr>
-
         </table>
       </td>
     </tr>
@@ -139,19 +126,16 @@ If you did not request this, please ignore this email.
 © 2026 Vendrya
 """
 
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = subject
-        msg["From"] = f"Vendrya <{config.GMAIL_USER}>"
-        msg["To"] = to_email
+        # ✅ Send via Resend API — works on Railway!
+        resend.Emails.send({
+            "from": "Vendrya <onboarding@resend.dev>",
+            "to": [to_email],
+            "subject": "Your Vendrya Verification Code",
+            "html": html_body,
+            "text": plain_body
+        })
 
-        msg.attach(MIMEText(plain_body, "plain"))
-        msg.attach(MIMEText(html_body, "html"))
-
-        with smtplib.SMTP_SSL("smtp.gmail.com", 587) as smtp:
-            smtp.ehlo()
-            smtp.starttls()
-            smtp.login(config.GMAIL_USER, config.GMAIL_APP_PASSWORD)
-            smtp.send_message(msg)
+        print(f"✅ OTP email sent to {to_email}")
 
     except Exception as e:
         print("⚠️ Email sending failed:", str(e))

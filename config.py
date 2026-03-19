@@ -30,7 +30,7 @@ GMAIL_APP_PASSWORD = os.getenv("GMAIL_APP_PASSWORD")
 RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID")
 RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
 RAZORPAY_WEBHOOK_SECRET = os.getenv("RAZORPAY_WEBHOOK_SECRET")          # ← set in Razorpay dashboard > Webhooks
-
+RESEND_API_KEY = os.getenv("RESEND_API_KEY")
 # categories
 DEFAULT_STORE_CATEGORIES = [
     "Groceries & General Store",
