@@ -15,4 +15,3 @@ requests
 python-dotenv
 apscheduler
 email-validator
-resend

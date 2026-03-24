@@ -126,11 +126,11 @@ def _download_logo_temp(logo_url: str) -> str | None:
         return None
 
 
-def _get_vendrya_logo_path() -> str | None:
-    """Returns path to Vendrya logo if it exists in static folder."""
+def _get_ventsa_logo_path() -> str | None:
+    """Returns path to Ventsa logo if it exists in static folder."""
     paths = [
-        os.path.join("static", "vendrya_logo.png"),
-        os.path.join("assets", "vendrya_logo.png"),
+        os.path.join("static", "ventsa_logo.png"),
+        os.path.join("assets", "ventsa_logo.png"),
     ]
     for p in paths:
         if os.path.exists(p):
@@ -292,11 +292,11 @@ def generate_invoice_pdf(payload: InvoiceRequest, user=Depends(auth_required)):
         elements.append(Paragraph("We appreciate your business and look forward to serving you again.", footer_style))
         elements.append(Spacer(1, 8))
 
-        # ── Vendryabranding (shown only if store has no custom logo) ──
+        # ── Ventsa branding (shown only if store has no custom logo) ──
         if not profile.get("logo_url"):
             elements.append(HRFlowable(width="100%", thickness=0.5, color=colors.HexColor("#e5e7eb"), spaceAfter=6))
-            elements.append(Paragraph("Powered by Vendrya · Simple Billing. Smart Business.", brand_style))
-            elements.append(Paragraph("vendrya.lovable.app", brand_style))
+            elements.append(Paragraph("Powered by Ventsa · Simple Billing. Smart Business.", brand_style))
+            elements.append(Paragraph("ventsa.lovable.app", brand_style))
 
         doc.build(elements)
         pdf_bytes = buffer.getvalue()
@@ -427,8 +427,8 @@ def generate_thermal_invoice(payload: InvoiceRequest, user=Depends(auth_required
         line()
 
         # ── Vendrya branding ──
-        draw_center("Powered by Vendrya", 8, color=colors.HexColor("#9ca3af"))
-        draw_center("vendrya.lovable.app", 7, color=colors.HexColor("#9ca3af"))
+        draw_center("Powered by Ventsa", 8, color=colors.HexColor("#9ca3af"))
+        draw_center("ventsa.lovable.app", 7, color=colors.HexColor("#9ca3af"))
 
         c.showPage()
         c.save()
